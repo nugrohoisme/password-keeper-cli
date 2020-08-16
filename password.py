@@ -11,6 +11,8 @@ conn = sqlite3.connect('password.db')
 encoding = 'utf-32'
 
 def init():
+    c = conn.cursor()
+
     sql = """ CREATE TABLE `credentials` ( 
                 `item` TEXT NOT NULL, 
                 `username` TEXT, 
@@ -18,7 +20,14 @@ def init():
                 PRIMARY KEY(`item`) 
             ) WITHOUT ROWID; """
 
-    c = conn.cursor()
+    c.execute(sql)
+            
+    sql = """ CREATE TABLE `login` (
+                `username` TEXT NOT NULL, 
+                `password` BLOB, 
+                PRIMARY KEY(`username`)
+            ) WITHOUT ROWID; """
+
     c.execute(sql)
 
 def add_data(item, user, pswd):
@@ -68,16 +77,17 @@ def get_data(item, mode='a'):
     elif mode == 'u':
         select = ['username']
 
-    cur = conn.execute("SELECT %s FROM credentials WHERE item = '%s' LIMIT 1" % (', '.join(select), item))
-    for row in cur:
+    row = conn.execute("SELECT %s FROM credentials WHERE item = '%s' LIMIT 1" % (', '.join(select), item)).fetchone()
+    
+    if row is not None:
         if mode == 'a':
             return {'username':row[0], 'password':row[1].decode(encoding)}
         elif mode == 'p':
             return {'password':row[0].decode(encoding)}
         elif mode == 'u':
             return {'username':row[0]}
-
-    return None
+    else:
+        return None
 
 def get_all_data():
     cur = conn.execute("SELECT item, username, password FROM credentials")
@@ -88,12 +98,46 @@ def get_all_data():
         'password': row[2].decode(encoding)
     } for row in cur]
 
+def login_delete():
+    conn.execute("DELETE FROM login")
+    conn.commit()
+
+def login_edit(user, pswd):
+    pswd = bytearray(pswd, encoding)
+
+    login_delete()
+
+    conn.execute("INSERT INTO login VALUES (?, ?)", (user, pswd))
+    conn.commit()
+
+def login_get():
+    row = conn.execute("SELECT username, password FROM login LIMIT 1").fetchone()
+
+    if row is not None:
+        return {'username': row[0], 'password': row[1].decode(encoding)}
+    else:
+        return None
+
 if __name__ == '__main__':
     # init DB if required
     if requireInit:
         print('Initalize database...')
         init()
 
+    # Check login if exist
+    login = login_get()
+    if login is not None:
+        import stdiomask
+
+        user = input('Username: ')
+        pswd = stdiomask.getpass('Password: ')
+
+        if not (login['username'] == user and login['password'] == pswd):
+            print('Invalid username/password')
+            exit()
+
+        print('')
+    
     # Get user input
     cmd = input('Insert command or item name: ')
 
@@ -179,7 +223,7 @@ if __name__ == '__main__':
             print('')
             print('[List Data]')
             print('> list')
-            print('> list|{item}')
+            print('> list|{search_item}')
             print('')
             print('[Get Data]')
             print('> {item}')
@@ -190,6 +234,47 @@ if __name__ == '__main__':
             print('[Export Data]')
             print('> export')
             print('> export|{filename}')
+            print('')
+            print('[Login Setup]')
+            print('> login|edit')
+            print('> login|delete')
+
+        ###### Login ######
+
+        elif cmd_arr[0] == 'login':
+            if len(cmd_arr) != 2:
+                raise Exception
+
+            if cmd_arr[1] == 'edit':
+                import stdiomask
+
+                user = input('Insert username: ')
+
+                while True:
+                    pswd = stdiomask.getpass('Insert password: ')
+                    cpswd = stdiomask.getpass('Confirm password: ')
+
+                    if pswd != cpswd:
+                        print('Sorry, your confirm password does not match...')
+                    else:
+                        login_edit(user, pswd)
+                        break
+                
+                print('Edit login successfully!')
+            elif cmd_arr[1] == 'delete':
+                login_delete()
+
+                print('Delete login successfully!')
+            else:
+                raise Exception
+
+        ###### Exit ######
+
+        elif cmd_arr[0] in ['exit', 'quit']:
+            if len(cmd_arr) != 1:
+                raise Exception
+
+            exit()
 
         ###### Get Data ######
 
@@ -220,8 +305,12 @@ if __name__ == '__main__':
                 if 'username' in result:
                     print('Username: %s' % result['username'])
     except ImportError as e:
-        print(e)
+        print('Error: %s' % e)
         print('Please install required libraries')
+    except sqlite3.IntegrityError as e:
+        print('Error: %s' % e)
+    except SystemExit:
+        pass
     except:
         print('Unrecognized command')
 
