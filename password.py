@@ -147,6 +147,8 @@ if __name__ == '__main__':
     cmd_arr = cmd.split(' ')
 
     try:
+        import pyperclip
+
         ###### Add Data ######
 
         if cmd_arr[0] == 'add':
@@ -311,6 +313,8 @@ if __name__ == '__main__':
         print('Error: %s' % e)
         print('Please install required libraries')
     except sqlite3.IntegrityError as e:
+        print('Error: %s' % e)
+    except pyperclip.PyperclipException as e:
         print('Error: %s' % e)
     except SystemExit:
         pass
