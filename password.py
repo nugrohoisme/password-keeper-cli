@@ -31,7 +31,8 @@ def init():
     c.execute(sql)
 
 def add_data(item, user, pswd):
-    pswd = pswd.strip('"')
+    user = user.strip('\"')
+    pswd = pswd.strip('\"')
     pswd = bytearray(pswd, encoding)
 
     conn.execute("INSERT INTO credentials VALUES (?,?,?)", (item, user, pswd))
@@ -43,12 +44,14 @@ def edit_data(item, user, pswd):
 
     if len(user) > 0:
         fields.append("username = ?")
+
+        user = user.strip('\"')
         params.append(user)
 
     if len(pswd) > 0:
         fields.append("password = ?")
 
-        pswd = pswd.strip('"')
+        pswd = pswd.strip('\"')
         pswd = bytearray(pswd, encoding)
         params.append(pswd)
     
@@ -141,7 +144,7 @@ if __name__ == '__main__':
     # Get user input
     cmd = input('Insert command or item name: ')
 
-    cmd_arr = cmd.split('|')
+    cmd_arr = cmd.split(' ')
 
     try:
         ###### Add Data ######
@@ -213,31 +216,31 @@ if __name__ == '__main__':
 
             print('')
             print('[Add Data]')
-            print('> add|{item}|{username}|{password}')
+            print('> add {item} {username} {password}')
             print('')
             print('[Edit Data]')
-            print('> edit|{item}|{username}|{password}')
+            print('> edit {item} {username} {password}')
             print('')
             print('[Delete Data]')
-            print('> delete|{item}')
+            print('> delete {item}')
             print('')
             print('[List Data]')
             print('> list')
-            print('> list|{search_item}')
+            print('> list {search_item}')
             print('')
             print('[Get Data]')
             print('> {item}')
-            print('> {item}|username')
-            print('> {item}|password')
-            print('> {item}|all')
+            print('> {item} username')
+            print('> {item} password')
+            print('> {item} all')
             print('')
             print('[Export Data]')
             print('> export')
-            print('> export|{filename}')
+            print('> export {filename}')
             print('')
             print('[Login Setup]')
-            print('> login|edit')
-            print('> login|delete')
+            print('> login edit')
+            print('> login delete')
 
         ###### Login ######
 
