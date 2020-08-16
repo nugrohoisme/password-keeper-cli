@@ -121,6 +121,10 @@ def login_get():
     else:
         return None
 
+class UnrecognizedCommandException(Exception):
+    def __init__(self):
+        super().__init__('Unrecognized command')
+
 if __name__ == '__main__':
     # init DB if required
     if requireInit:
@@ -153,7 +157,7 @@ if __name__ == '__main__':
 
         if cmd_arr[0] == 'add':
             if len(cmd_arr) != 4:
-                raise Exception
+                raise UnrecognizedCommandException
 
             add_data(cmd_arr[1], cmd_arr[2], cmd_arr[3])
 
@@ -163,7 +167,7 @@ if __name__ == '__main__':
 
         elif cmd_arr[0] == 'edit':
             if len(cmd_arr) != 4:
-                raise Exception
+                raise UnrecognizedCommandException
 
             edit_data(cmd_arr[1], cmd_arr[2], cmd_arr[3])
             print('Edit successfully!')
@@ -172,7 +176,7 @@ if __name__ == '__main__':
 
         elif cmd_arr[0] == 'delete':
             if len(cmd_arr) != 2:
-                raise Exception
+                raise UnrecognizedCommandException
 
             delete_data(cmd_arr[1])
             print('Delete successfully!')
@@ -181,7 +185,7 @@ if __name__ == '__main__':
 
         elif cmd_arr[0] == 'list':
             if len(cmd_arr) > 2:
-                raise Exception
+                raise UnrecognizedCommandException
 
             if len(cmd_arr) == 1:
                 result = list_data()
@@ -195,7 +199,7 @@ if __name__ == '__main__':
 
         elif cmd_arr[0] == 'export':
             if len(cmd_arr) > 2:
-                raise Exception
+                raise UnrecognizedCommandException
 
             fname = 'password.txt' if len(cmd_arr) == 1 else cmd_arr[1]
 
@@ -214,7 +218,7 @@ if __name__ == '__main__':
 
         elif cmd_arr[0] == 'help':
             if len(cmd_arr) != 1:
-                raise Exception
+                raise UnrecognizedCommandException
 
             print('')
             print('[Add Data]')
@@ -248,7 +252,7 @@ if __name__ == '__main__':
 
         elif cmd_arr[0] == 'login':
             if len(cmd_arr) != 2:
-                raise Exception
+                raise UnrecognizedCommandException
 
             if cmd_arr[1] == 'edit':
                 import stdiomask
@@ -271,13 +275,13 @@ if __name__ == '__main__':
 
                 print('Delete login successfully!')
             else:
-                raise Exception
+                raise UnrecognizedCommandException
 
         ###### Exit ######
 
         elif cmd_arr[0] in ['exit', 'quit']:
             if len(cmd_arr) != 1:
-                raise Exception
+                raise UnrecognizedCommandException
 
             exit()
 
@@ -285,7 +289,7 @@ if __name__ == '__main__':
 
         else:
             if len(cmd_arr) > 2:
-                raise Exception
+                raise UnrecognizedCommandException
 
             if len(cmd_arr) == 1:
                 result = get_data(cmd_arr[0], 'p')
@@ -297,7 +301,7 @@ if __name__ == '__main__':
                 elif cmd_arr[1] == 'all':
                     result = get_data(cmd_arr[0], 'a')
                 else:
-                    raise Exception
+                    raise UnrecognizedCommandException
 
             if result is None:
                 print('Item is not found')
@@ -309,6 +313,8 @@ if __name__ == '__main__':
                 
                 if 'username' in result:
                     print('Username: %s' % result['username'])
+    except UnrecognizedCommandException as e:
+        print(e)
     except ImportError as e:
         print('Error: %s' % e)
         print('Please install required libraries')
@@ -318,7 +324,6 @@ if __name__ == '__main__':
         print('Error: %s' % e)
     except SystemExit:
         pass
-    except:
-        print('Unrecognized command')
+    
 
     conn.close()
