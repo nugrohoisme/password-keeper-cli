@@ -1,8 +1,9 @@
 @echo off
 
-cd /d %~dp0
-CALL venv\Scripts\activate
-python3 password.py
+set DIR=%~dp0
+
+CALL %DIR%\venv\Scripts\activate
+python3 %DIR%\password.py
 CALL deactivate
 echo.
 pause

@@ -1,8 +1,9 @@
 @echo off
 
-cd /d %~dp0
-python3 -m virtualenv venv
-CALL venv\Scripts\activate
-pip install -r package.conf
+set DIR=%~dp0
+
+python3 -m virtualenv %DIR%\venv
+CALL %DIR%\venv\Scripts\activate
+pip install -r %DIR%\package.conf
 CALL deactivate
 pause

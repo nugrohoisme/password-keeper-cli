@@ -1,13 +1,15 @@
 import os
 import sqlite3
 
+dbpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'password.db')
+
 # Check if file exists
-if os.path.exists('password.db'):
+if os.path.exists(dbpath):
     requireInit = False
 else:
     requireInit = True
 
-conn = sqlite3.connect('password.db')
+conn = sqlite3.connect(dbpath)
 encoding = 'utf-32'
 
 def init():
