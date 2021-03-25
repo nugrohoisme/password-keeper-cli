@@ -63,7 +63,7 @@ def edit_data(item, user, pswd):
     conn.commit()
 
 def delete_data(item):
-    conn.execute("DELETE FROM credentials WHERE item = ?", item)
+    conn.execute("DELETE FROM credentials WHERE item = ?", (item,))
     conn.commit()
 
 def list_data(item=None):
@@ -204,6 +204,7 @@ if __name__ == '__main__':
                 raise UnrecognizedCommandException
 
             fname = 'password.txt' if len(cmd_arr) == 1 else cmd_arr[1]
+            fname = os.path.join(os.path.dirname(os.path.abspath(__file__)), fname)
 
             with open(fname, 'w') as f:
                 for row in get_all_data():
@@ -308,13 +309,20 @@ if __name__ == '__main__':
             if result is None:
                 print('Item is not found')
             else:
+                import clipboard
+
+                if 'username' in result:
+                    clipboard.copy(result['username'])
+
+                    if 'password' in result:
+                        input('Username "%s" is copied to clipboard, hit ENTER to copy password subsequently' % result['username'])
+                    else:
+                        print('Username "%s" is copied to clipboard' % result['username'])
+
                 if 'password' in result:
-                    import clipboard
                     clipboard.copy(result['password'])
                     print('Password is copied to clipboard')
                 
-                if 'username' in result:
-                    print('Username: %s' % result['username'])
     except UnrecognizedCommandException as e:
         print(e)
     except ImportError as e:
